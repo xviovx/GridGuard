@@ -1,7 +1,12 @@
 import requests
+import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 def fetch_schedule(area_id, token):
-    url = f"https://developer.sepush.co.za/business/2.0/area?id={area_id}&test=current"
+    url = f"https://developer.sepush.co.za/business/2.0/area?id={area_id}"
     headers = {'Token': token}
 
     response = requests.get(url, headers=headers)
@@ -11,14 +16,14 @@ def fetch_schedule(area_id, token):
         print(f"Error fetching data: {response.status_code}")
         return None
 
-# Replace 'YOUR_API_TOKEN' with your actual EskomSePush API token
-token = 'F15F0D58-67074B31-B844CDA5-CF4E25CC'
+# Add your token here
+token = os.getenv('ESKOMSE_API_TOKEN')
 
-# Using the area ID for Gallo Manor Ext 2 (16)
-area_id = 'eskde-16-gallomanorext2cityofjohannesburggauteng'
+# Determine your area id, and add it here
+area_id = 'eskdo-16-seavistakougaeasterncape'
 
 schedule = fetch_schedule(area_id, token)
 if schedule:
-    print(schedule)
+    print(json.dumps(schedule, indent=4))
 else:
     print("No schedule data returned or an error occurred")
