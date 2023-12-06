@@ -1,2 +1,2 @@
 # GridGuard
-An intuitive application designed to anticipate load shedding schedules, ensuring your PC is safely powered down before any abrupt interruptions occur.
+A simple utility to shutdown your PC when there is loadshedding
