@@ -19,7 +19,7 @@ def fetch_schedule(area_id, token):
 
 def shutdown_computer():
     # Windows
-    # os.system('shutdown /s /t 1')
+    os.system('shutdown /s /t 10')
     print("Shutting down PC")
 
     # For Unix/Linux/MacOS, uncomment the following line:
@@ -33,14 +33,18 @@ def check_for_upcoming_load_shedding(schedule):
         end_time_utc = datetime.datetime.fromisoformat(event['end'])
         start_time = start_time_utc.astimezone(sa_timezone)
         end_time = end_time_utc.astimezone(sa_timezone)
-        # Check if load shedding will start within the next 10 minutes
-        if current_time <= start_time < current_time + datetime.timedelta(minutes=10):
-            return True
+        
         # Check if load shedding is currently in progress
         if start_time <= current_time < end_time:
             print("Load shedding is currently in progress.")
-            return False
+            return True  # Change here to return True
+
+        # Check if load shedding will start within the next 10 minutes
+        if current_time <= start_time < current_time + datetime.timedelta(minutes=10):
+            return True
+
     return False
+
 
 load_dotenv()
 
