@@ -8,12 +8,26 @@ import platform
 import logging
 import threading
 from dotenv import load_dotenv
-from tkinter import Tk, Label, Entry, Button, Toplevel
+from tkinter import Tk, Label, Entry, Button
+import sys
+from winreg import HKEY_CURRENT_USER, OpenKey, KEY_ALL_ACCESS, SetValueEx, REG_SZ
 
 # Initialize logging
 logging.basicConfig(filename='loadshedding_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 shutdown_flag = threading.Event()
+
+def add_startup():
+    # Get the full path to the script
+    script_path = os.path.realpath(__file__)
+
+    # Specify the name you want for the registry entry
+    registry_entry_name = 'YourScriptName'
+
+    # Set the registry key value
+    key_val = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+    key_to_change = OpenKey(HKEY_CURRENT_USER, key_val, 0, KEY_ALL_ACCESS)
+    SetValueEx(key_to_change, registry_entry_name, 0, REG_SZ, script_path)
 
 def fetch_schedule(area_id, token):
     url = f"https://developer.sepush.co.za/business/2.0/area?id={area_id}"
