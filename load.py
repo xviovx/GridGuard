@@ -8,23 +8,21 @@ import platform
 import logging
 import threading
 from dotenv import load_dotenv
-from tkinter import Tk, Label, Entry, Button
+from tkinter import Tk, Label, Entry, Button, messagebox
 import sys
 from winreg import HKEY_CURRENT_USER, OpenKey, KEY_ALL_ACCESS, SetValueEx, REG_SZ
 
-# Initialize logging
+# init logging
 logging.basicConfig(filename='loadshedding_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 shutdown_flag = threading.Event()
 
+# add to registry
 def add_startup():
-    # Get the full path to the script
     script_path = os.path.realpath(__file__)
 
-    # Specify the name you want for the registry entry
-    registry_entry_name = 'YourScriptName'
+    registry_entry_name = 'GridGuard'
 
-    # Set the registry key value
     key_val = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
     key_to_change = OpenKey(HKEY_CURRENT_USER, key_val, 0, KEY_ALL_ACCESS)
     SetValueEx(key_to_change, registry_entry_name, 0, REG_SZ, script_path)
@@ -104,20 +102,37 @@ def main(api_token, area_id):
             if check_for_upcoming_load_shedding(schedule, sa_timezone):
                 logging.info("Load shedding within the next 10 minutes. Initiating shutdown.")
                 shutdown_computer()
+                if shutdown_flag.is_set():
+                    logging.info("Shutdown cancelled. Will check schedule again later.")
+                    shutdown_flag.clear()  # reset flag for future shutdowns
+                    time.sleep(check_interval_hours * 60 * 60)
+                    continue
                 break
         time.sleep(check_interval_hours * 60 * 60)
 
 def setup_gui():
     def on_submit():
-        api_token = api_token_entry.get()
-        area_id = area_id_entry.get()
+        api_token = api_token_entry.get().strip()
+        area_id = area_id_entry.get().strip()
+
+        if not api_token or not area_id:
+            messagebox.showerror("Error", "API Token and Area ID cannot be empty or contain only whitespace.")
+            return
+
         with open('.env', 'w') as f:
             f.write(f'ESKOMSE_API_TOKEN={api_token}\nAREA_ID={area_id}\n')
+
         root.destroy()
+        add_startup()
         main(api_token, area_id)
 
     root = Tk()
-    root.title("Load Shedding App Setup")
+    root.title("GridGuard Setup")
+
+    root.geometry("400x300")
+
+    icon_path = './assets/GridGuard.ico'
+    root.iconbitmap(icon_path)
 
     Label(root, text="API Token:").pack()
     api_token_entry = Entry(root)
